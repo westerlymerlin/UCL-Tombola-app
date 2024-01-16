@@ -9,18 +9,24 @@ A high speed camera is used to capture images from the simulator
 An [Adafruit FT232H Breakout - General Purpose USB to GPIO, SPI, I2C - USB C](https://www.adafruit.com/product/2264) is 
 used to read positional info from the drum.
 
-Python instructions are [here](https://github.com/adafruit/Adafruit_Blinka)
+Python instructions [are here](https://github.com/adafruit/Adafruit_Blinka)
 
 A chronos 2.1(HD) Hisgh speed camera [description here](https://www.krontech.ca/product/chronos-2-1-hd-high-speed-camera/)
 
 Camera API [description is here](https://www.krontech.ca/wp-content/uploads/2020/05/WebAPI_Printout.pdf)
 
 ---
-**API Messages sent to the Tombola Motor Controller API**
-<br>
-`{"setrpm": n.n}`  Start the tombola running and hold it at n.n rpm (0.1 - 74.9 rpm)<br>
-`{"setrpm": 0}`  Stop the tombola<br>
+**Sample Code**<br>
+`example.py` example of a python script that controls the drum speed and records a series of images.
 
 ---
-**API Messages sent to the Camera API**
-<br>
+**CameraClass**
+
+Methods:<br>
+`start_camera`: Starts the camera sensor/record process.<br>
+`stop_camera`: Stops the camera sensor/record process.<br>
+`set_drum_rpm`: Sets the desired RPM of the drum.<br>
+`get_drum_rpm`: Gets the RPM of the drum.
+
+
+
