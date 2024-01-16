@@ -22,7 +22,7 @@ Camera API [description is here](https://www.krontech.ca/wp-content/uploads/2020
 ---
 **CameraClass**
 
-Methods:<br>
+The camera class has 4 public methods:
 `start_camera`: Starts the camera sensor/record process.<br>
 `stop_camera`: Stops the camera sensor/record process.<br>
 `set_drum_rpm`: Sets the desired RPM of the drum.<br>
