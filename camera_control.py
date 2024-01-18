@@ -159,7 +159,7 @@ class CameraClass:
             logger.warning('CameraClass: file_save: Recording is in progress so cannot save the file')
             return
         url = self.camera_url + 'startFilesave'
-        payload = {'filename': datetime.now().strftime('UCL-Tombola-%Y-%m-%d-%H:%M:%S.'
+        payload = {'filename': datetime.now().strftime('UCL-Tombola_%Y-%m-%d_%H-%M-%S.%f.'
                                                        + settings['camera_file_extention']),
                    'device': settings['camera_storage'],
                    'format': settings['camera_format']}
