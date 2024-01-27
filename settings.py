@@ -1,6 +1,6 @@
 """
 Settings module, reads the settings from a settings.json file. If it does not exist or a new setting
-has appeared it will creat from the defaults in the initialise function.
+has appeared it will create from the defaults in the initialise function.
 Author: Gary Twinn
 """
 
@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 
 
-VERSION = '1.0.1'
+VERSION = '1.0.2'
 
 
 def writesettings():
