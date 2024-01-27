@@ -47,12 +47,13 @@ class CameraClass:
         self.end_sensor = None
         self.runnning = False
         self.recording = False
-        self.headers = {"Accept": "application/json", "api-key": settings['tombola_apikey']}
+        self.headers = {"Accept": "application/json", "api-key": settings['drum_apikey']}
         self.camera_url = settings['camera_controller']
         self.camera_timeout = settings['camera_controller_timeout']
         self.drum_url = settings['drum_controller']
         self.drum_timeout = settings['drum_controller_timeout']
         if CONTROLLER is not None:
+            self.board_id = CONTROLLER
             self.start_sensor = digitalio.DigitalInOut(board.C0)
             self.start_sensor.direction = digitalio.Direction.INPUT
             self.end_sensor = digitalio.DigitalInOut(board.C1)
