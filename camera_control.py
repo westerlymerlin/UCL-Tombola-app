@@ -119,6 +119,7 @@ class CameraClass:
 
     def __end_detect(self):
         """Actions to do if the end sensor is triggered"""
+        logger.debug('CameraClass: End Sensor Triggered')
         self.__stop_recording()
         self.__file_save()
 
