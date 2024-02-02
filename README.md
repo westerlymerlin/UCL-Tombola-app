@@ -7,13 +7,13 @@ The River simulator consistes of a large (1m diameter) drum that can contain wat
 A high speed camera is used to capture images from the simulator
 
 An [Adafruit FT232H Breakout - General Purpose USB to GPIO, SPI, I2C - USB C](https://www.adafruit.com/product/2264) is 
-used to read positional info from the drum.
+used to read positional info from the drum.<br>
+- Linux setup instructions [are here](https://learn.adafruit.com/circuitpython-on-any-computer-with-ft232h/linux)<br> 
+- Windows setup instrauctions [are here](https://learn.adafruit.com/circuitpython-on-any-computer-with-ft232h/windows)<br>
+- Python details and libraries [are here](https://github.com/adafruit/Adafruit_Blinka)
 
-Python instructions [are here](https://github.com/adafruit/Adafruit_Blinka)
-
-A chronos 2.1(HD) Hisgh speed camera [description here](https://www.krontech.ca/product/chronos-2-1-hd-high-speed-camera/)
-
-Camera API [description is here](https://www.krontech.ca/wp-content/uploads/2020/05/WebAPI_Printout.pdf)
+A chronos 2.1(HD) High speed camera [description here](https://www.krontech.ca/product/chronos-2-1-hd-high-speed-camera/)<br>
+- Camera API [description is here](https://www.krontech.ca/wp-content/uploads/2020/05/WebAPI_Printout.pdf)
 
 ---
 **Sample Code**<br>
@@ -23,10 +23,10 @@ Camera API [description is here](https://www.krontech.ca/wp-content/uploads/2020
 **CameraClass**
 
 The camera class has 4 public methods:<br>
-`start_camera`: Starts the camera sensor/record process.<br>
-`stop_camera`: Stops the camera sensor/record process.<br>
-`set_drum_rpm`: Sets the desired RPM of the drum.<br>
-`get_drum_rpm`: Gets the RPM of the drum.
+- `start_camera`: Starts the camera sensor/record process.<br>
+- `stop_camera`: Stops the camera sensor/record process.<br>
+- `set_drum_rpm`: Sets the desired RPM of the drum.<br>
+- `get_drum_rpm`: Gets the RPM of the drum.
 
 
 

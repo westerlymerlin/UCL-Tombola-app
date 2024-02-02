@@ -18,7 +18,7 @@ dev = usb.core.find(idVendor=0x0403, idProduct=0x6014)  # scan the usb to see if
 if dev is None:
     CONTROLLER = None
 else:
-    # print('USB device data: %s', dev)
+    # print('USB device data:\n', dev)
     os.environ["BLINKA_FT232H"] = "1"  # set an environment variable for the board we are using
     import board
     import digitalio
