@@ -47,7 +47,7 @@ class CameraClass:
         self.end_sensor = None
         self.runnning = False
         self.recording = False
-        self.headers = {"Accept": "application/json", "api-key": settings['drum_apikey']}
+        self.headers = {"Accept": "application/json", "Content-Type": "application/json", "api-key": settings['drum_apikey']}
         self.camera_url = settings['camera_controller']
         self.camera_timeout = settings['camera_controller_timeout']
         self.drum_url = settings['drum_controller']
@@ -114,11 +114,13 @@ class CameraClass:
 
     def __start_detect(self):
         """Actions to do if the start sensor is triggered"""
+        print('CameraClass: Start Sensor Triggered')
         logger.debug('CameraClass: Start Sensor Triggered')
         self.__start_recording()
 
     def __end_detect(self):
         """Actions to do if the end sensor is triggered"""
+        print('CameraClass: End Sensor Triggered')
         logger.debug('CameraClass: End Sensor Triggered')
         self.__stop_recording()
         self.__file_save()
@@ -160,17 +162,28 @@ class CameraClass:
         if self.recording:
             logger.warning('CameraClass: file_save: Recording is in progress so cannot save the file')
             return
-        url = self.camera_url + 'startFilesave'
-        payload = {'filename': datetime.now().strftime('UCL-Tombola_%Y-%m-%d_%H-%M-%S.%f.'
-                                                       + settings['camera_file_extention']),
+        url = self.camera_url + '/startFilesave'
+        payload = {'filename': datetime.now().strftime('UCL-Tombola-%Y-%m-%d-%H-%M-%S-%f'),
                    'device': settings['camera_storage'],
                    'format': settings['camera_format']}
         try:
-            response = requests.get(url, json=payload, timeout=self.camera_timeout, headers=self.headers)
+            response = requests.post(url, json=payload, timeout=self.camera_timeout, headers=self.headers)
             if response.status_code == 200:
                 self.recording = True
                 logger.debug('CameraClass: File saved')
             else:
-                logger.warning('CameraClass: Failed to save file - check camera status')
+                logger.warning('CameraClass: Failed to save file - check camera status %s', response.status_code)
         except requests.Timeout:
-            logger.error('CameraClass: Timeout when saving a file to the camera')
+            logger.error('CameraClass: Timeout when saving a file to the camera, check it is on and connected')
+
+    def manualstart(self):
+        """Manual test for starting camera - used for testing"""
+        self.__start_recording()
+
+    def manualstop(self):
+        """Manual test for stopping camera - used for testing"""
+        self.__stop_recording()
+
+    def manualsave(self):
+        """Manual test for saving video - used for testing"""
+        self.__file_save()

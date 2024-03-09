@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 
 
-VERSION = '1.0.4'
+VERSION = '1.0.5'
 
 
 def writesettings():
@@ -29,9 +29,8 @@ def initialise():  # Default values written to the settings.json file the first 
                  'drum_controller_timeout': 0.5,
                  'camera_controller': 'http://192.168.12.1/control',
                  'camera_controller_timeout': 0.5,
-                 'camera_storage': '/dev/sdb',
-                 'camera_format': 'H.264',
-                 'camera_file_extention': 'mp4'}
+                 'camera_storage': 'sda1',
+                 'camera_format': 'x264'}
     return isettings
 
 
