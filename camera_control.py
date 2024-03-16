@@ -18,7 +18,6 @@ dev = usb.core.find(idVendor=0x0403, idProduct=0x6014)  # scan the usb to see if
 if dev is None:
     CONTROLLER = None
 else:
-    # print('USB device data:\n', dev)
     os.environ["BLINKA_FT232H"] = "1"  # set an environment variable for the board we are using
     import board
     import digitalio
@@ -39,7 +38,6 @@ class CameraClass:
         stop_camera: Stops the camera sensor/record process.
         set_drum_rpm: Sets the desired RPM of the drum.
         get_drum_rpm: Gets the RPM of the drum.
-
     """
     def __init__(self):
         self.board_id = None
@@ -47,12 +45,14 @@ class CameraClass:
         self.end_sensor = None
         self.runnning = False
         self.recording = False
-        self.headers = {"Accept": "application/json", "Content-Type": "application/json", "api-key": settings['drum_apikey']}
+        self.headers = {"Accept": "application/json",
+                        "Content-Type": "application/json",
+                        "api-key": settings['drum_apikey']}
         self.camera_url = settings['camera_controller']
         self.camera_timeout = settings['camera_controller_timeout']
         self.drum_url = settings['drum_controller']
         self.drum_timeout = settings['drum_controller_timeout']
-        if CONTROLLER is not None:
+        if CONTROLLER is not None:  # The USB device is plugges in and working
             self.board_id = CONTROLLER
             self.start_sensor = digitalio.DigitalInOut(board.C0)
             self.start_sensor.direction = digitalio.Direction.INPUT
@@ -61,66 +61,52 @@ class CameraClass:
             logger.info('CameraClass: Detected GPIO adapter: %s', CONTROLLER)
         else:
             logger.error('CameraClass: GPIO adapter missing')
+            print('CameraClass: GPIO adapter missing')
 
     def start_camera(self):
         """Starts the camera sensor/record process."""
         if self.board_id is not None:
             self.runnning = True
-            thread = threading.Thread(target=self.__gpio_monitor)
+            thread = threading.Thread(target=self.__gpio_start_sensor_monitor)
             thread.start()
+            thread = threading.Thread(target=self.__gpio_end_sensor_monitor)
+            thread.start()
+            logger.info('CameraClass: Starting auto recording, looking for sensor signals')
         else:
             logger.error('CameraClass: Start with no GPIO Board Installed')
 
     def stop_camera(self):
         """Stops the camera sensor/record process."""
         self.runnning = False
-        logger.debug('CameraClass: Exiting')
+        logger.info('CameraClass: Stopping auto recording, ignoring sensor signals')
 
-    def set_drum_rpm(self, speed: float):
-        """Set the desired rpm of the drum
-        **speed** = float (0.0 - 74.9)"""
-        payload = {"setrpm": speed}
-        try:
-            requests.post(self.drum_url, json=payload, timeout=self.drum_timeout, headers=self.headers)
-            return speed
-        except requests.Timeout:
-            logger.error("CameraClass: set_drum_speed request timed out")
-            return 0.0
-
-    def get_drum_rpm(self):
-        """Get the rpm of the drum"""
-        payload = {"rpm": True}
-        try:
-            response = requests.post(self.drum_url, json=payload, timeout=self.drum_timeout, headers=self.headers)
-            rpm = response.json()['rpm']
-            return rpm
-        except requests.Timeout:
-            logger.error("CameraClass: set_drum_speed request timed out")
-            return 0.0
-
-    def __gpio_monitor(self):
-        """GPIO Scanner thread scans the start and end sensor pins"""
-        startsensorvalue = False
-        endsensorvalue = False
+    def __gpio_start_sensor_monitor(self):
+        """GPIO Scanner thread scans the start sensor pin for a leading edge signal"""
+        previous_sensor_state = False
         while self.runnning:
-            if startsensorvalue != self.start_sensor.value:
-                if self.start_sensor.value is False:
-                    self.__start_detect()
-            if endsensorvalue != self.end_sensor.value:
-                if self.end_sensor.value is False:
-                    self.__end_detect()
-            startsensorvalue = self.start_sensor.value
-            endsensorvalue = self.end_sensor.value
+            current_sensor_state = self.start_sensor.value
+            if previous_sensor_state != current_sensor_state and current_sensor_state is False:
+                thread = threading.Thread(target=self.__start_detect)
+                thread.start()
+            previous_sensor_state = current_sensor_state
+
+    def __gpio_end_sensor_monitor(self):
+        """GPIO Scanner thread scans the end sensor pin for a leading edge signal"""
+        previous_sensor_state = False
+        while self.runnning:
+            current_sensor_state = self.end_sensor.value
+            if previous_sensor_state != current_sensor_state and current_sensor_state is False:
+                thread = threading.Thread(target=self.__end_detect)
+                thread.start()
+            previous_sensor_state = current_sensor_state
 
     def __start_detect(self):
         """Actions to do if the start sensor is triggered"""
-        print('CameraClass: Start Sensor Triggered')
         logger.debug('CameraClass: Start Sensor Triggered')
         self.__start_recording()
 
     def __end_detect(self):
         """Actions to do if the end sensor is triggered"""
-        print('CameraClass: End Sensor Triggered')
         logger.debug('CameraClass: End Sensor Triggered')
         self.__stop_recording()
         self.__file_save()
@@ -176,14 +162,24 @@ class CameraClass:
         except requests.Timeout:
             logger.error('CameraClass: Timeout when saving a file to the camera, check it is on and connected')
 
-    def manualstart(self):
-        """Manual test for starting camera - used for testing"""
-        self.__start_recording()
+    def set_drum_rpm(self, speed: float):
+        """Set the desired rpm of the drum
+        **speed** = float (0.0 - 74.9)"""
+        payload = {"setrpm": speed}
+        try:
+            requests.post(self.drum_url, json=payload, timeout=self.drum_timeout, headers=self.headers)
+            return speed
+        except requests.Timeout:
+            logger.error("CameraClass: set_drum_speed request timed out")
+            return 0.0
 
-    def manualstop(self):
-        """Manual test for stopping camera - used for testing"""
-        self.__stop_recording()
-
-    def manualsave(self):
-        """Manual test for saving video - used for testing"""
-        self.__file_save()
+    def get_drum_rpm(self):
+        """Get the rpm of the drum"""
+        payload = {"rpm": True}
+        try:
+            response = requests.post(self.drum_url, json=payload, timeout=self.drum_timeout, headers=self.headers)
+            rpm = response.json()['rpm']
+            return rpm
+        except requests.Timeout:
+            logger.error("CameraClass: set_drum_speed request timed out")
+            return 0.0
