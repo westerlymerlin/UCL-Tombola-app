@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 
 
-VERSION = '1.0.6'
+VERSION = '1.0.7'
 
 
 def writesettings():
@@ -25,9 +25,10 @@ def initialise():  # Default values written to the settings.json file the first 
                  'logfilepath': './logs/tombola-app.log',
                  'loglevel': 'INFO',
                  'drum_apikey': '<type-it-here>',
-                 'drum_controller': 'http://byron-corelab.es.ucl.ac.uk/api',
+                 'drum_controller': 'http://192.168.0.10/api',
                  'drum_controller_timeout': 0.5,
-                 'camera_controller': 'http://192.168.12.1/control',
+                 'recording_cadence': 10,
+                 'camera_controller': 'http://192.168.0.20/control',
                  'camera_controller_timeout': 0.5,
                  'camera_storage': 'sda1',
                  'camera_format': 'x264'}

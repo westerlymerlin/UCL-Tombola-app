@@ -11,7 +11,7 @@ import threading
 from datetime import datetime
 import requests
 import usb
-from settings import settings
+from settings import settings, writesettings
 from logmanager import logger
 
 dev = usb.core.find(idVendor=0x0403, idProduct=0x6014)  # scan the usb to see if the board is conencted
@@ -52,6 +52,8 @@ class CameraClass:
         self.camera_timeout = settings['camera_controller_timeout']
         self.drum_url = settings['drum_controller']
         self.drum_timeout = settings['drum_controller_timeout']
+        self.recording_cadence = settings['recording_cadence']
+        self.recording_counter = 0
         if CONTROLLER is not None:  # The USB device is plugges in and working
             self.board_id = CONTROLLER
             self.start_sensor = digitalio.DigitalInOut(board.C0)
@@ -103,13 +105,18 @@ class CameraClass:
     def __start_detect(self):
         """Actions to do if the start sensor is triggered"""
         logger.debug('CameraClass: Start Sensor Triggered')
-        self.__start_recording()
+        if self.recording_counter == 0:
+            self.__start_recording()
+        self.recording_counter += 1
+        if self.recording_counter == self.recording_cadence:
+            self.recording_counter = 0
 
     def __end_detect(self):
         """Actions to do if the end sensor is triggered"""
         logger.debug('CameraClass: End Sensor Triggered')
-        self.__stop_recording()
-        self.__file_save()
+        if self.recording:
+            self.__stop_recording()
+            self.__file_save()
 
     def __start_recording(self):
         """Send a Start recoording API call to the camera"""
@@ -183,3 +190,16 @@ class CameraClass:
         except requests.Timeout:
             logger.error("CameraClass: set_drum_speed request timed out")
             return 0.0
+
+    def show_settings(self):
+        """Shows the current set of settings in the Json file"""
+        print('\nUCL Tombola App Settings:')
+        print('%s%s' % ("{:<40}".format('Setting'), 'Value'))
+        print('%s%s' % ("{:<40}".format('-------'), '-----'))
+        for item in settings:
+            print('%s%s' % ("{:<40}".format(item), settings[item]))
+
+    def change_setting(self, setting, value):
+        """Update the setting in the settings json file"""
+        settings[setting] = value
+        writesettings()
