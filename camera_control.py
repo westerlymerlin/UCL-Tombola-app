@@ -38,6 +38,8 @@ class CameraClass:
         stop_camera: Stops the camera sensor/record process.
         set_drum_rpm: Sets the desired RPM of the drum.
         get_drum_rpm: Gets the RPM of the drum.
+        change_setting: Changes the settings stored in the settings.json file
+        show_settings: Prints the settings stored in the settings.json file
     """
     def __init__(self):
         self.board_id = None

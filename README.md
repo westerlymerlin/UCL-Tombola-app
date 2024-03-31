@@ -27,6 +27,8 @@ The camera class has 4 public methods:<br>
 - `stop_camera`: Stops the camera sensor/record process.<br>
 - `set_drum_rpm`: Sets the desired RPM of the drum.<br>
 - `get_drum_rpm`: Gets the RPM of the drum.
+- `change_setting`: Change a saved setting.
+- `show_settings`: Print out the settings.
 
 
 

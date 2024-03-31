@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 
 
-VERSION = '1.0.7'
+VERSION = '1.1.1'
 
 
 def writesettings():
@@ -18,7 +18,7 @@ def writesettings():
         json.dump(settings, outfile, indent=4, sort_keys=True)
 
 
-def initialise():  # Default values written to the settings.json file the first time the app is run
+def initialise():
     """Setup the settings structure with default values"""
     isettings = {'LastSave': '01/01/2000 00:00:01',
                  'logappname': 'Tombola-Py',
