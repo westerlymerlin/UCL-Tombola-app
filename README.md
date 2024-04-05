@@ -15,6 +15,8 @@ used to read positional info from the drum.<br>
 A chronos 2.1(HD) High speed camera [description here](https://www.krontech.ca/product/chronos-2-1-hd-high-speed-camera/)<br>
 - Camera API [description is here](https://www.krontech.ca/wp-content/uploads/2020/05/WebAPI_Printout.pdf)
 
+Full documentation can be found in the file: [README.pdf](./README.pdf)
+
 ---
 **Sample Code**<br>
 `example.py` example of a python script that controls the drum speed and records a series of images.
