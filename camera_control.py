@@ -8,10 +8,11 @@ Author: Gary Twinn
 
 import os
 import threading
+from time import sleep
 from datetime import datetime
 import requests
 import usb
-from settings import settings, writesettings
+from app_control import settings, writesettings
 from logmanager import logger
 
 dev = usb.core.find(idVendor=0x0403, idProduct=0x6014)  # scan the usb to see if the board is conencted
@@ -92,7 +93,9 @@ class CameraClass:
             if previous_sensor_state != current_sensor_state and current_sensor_state is False:
                 thread = threading.Thread(target=self.__start_detect)
                 thread.start()
+                sleep(settings['sensor_debounce_time'])
             previous_sensor_state = current_sensor_state
+
 
     def __gpio_end_sensor_monitor(self):
         """GPIO Scanner thread scans the end sensor pin for a leading edge signal"""
@@ -102,11 +105,13 @@ class CameraClass:
             if previous_sensor_state != current_sensor_state and current_sensor_state is False:
                 thread = threading.Thread(target=self.__end_detect)
                 thread.start()
+                sleep(settings['sensor_debounce_time'])
             previous_sensor_state = current_sensor_state
 
     def __start_detect(self):
         """Actions to do if the start sensor is triggered"""
         logger.debug('CameraClass: Start Sensor Triggered')
+        # print('CameraClass: Start Sensor Triggered')
         if self.recording_counter == 0:
             self.__start_recording()
         self.recording_counter += 1
@@ -116,12 +121,13 @@ class CameraClass:
     def __end_detect(self):
         """Actions to do if the end sensor is triggered"""
         logger.debug('CameraClass: End Sensor Triggered')
+        # print('CameraClass: End Sensor Triggered')
         if self.recording:
             self.__stop_recording()
             self.__file_save()
 
     def __start_recording(self):
-        """Send a Start recoording API call to the camera"""
+        """Send a Start recording API call to the camera"""
         if self.recording:
             logger.warning('CameraClass: start_recording: Recording is already in progress')
             return
@@ -165,6 +171,7 @@ class CameraClass:
             response = requests.post(url, json=payload, timeout=self.camera_timeout, headers=self.headers)
             if response.status_code == 200:
                 self.recording = True
+                print('CameraClass: File saved')
                 logger.debug('CameraClass: File saved')
             else:
                 logger.warning('CameraClass: Failed to save file - check camera status %s', response.status_code)
