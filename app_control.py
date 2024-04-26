@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 
 
-VERSION = '1.1.2'
+VERSION = '1.2.0'
 
 
 def writesettings():
@@ -28,8 +28,13 @@ def initialise():
                  'drum_controller': 'http://192.168.0.10/api',
                  'drum_controller_timeout': 0.5,
                  'recording_cadence': 10,
-                 'camera_controller': 'http://192.168.0.20/control',
+                 'camera_controller1': 'http://192.168.0.20/control',
+                 'camera_controller2': 'http://192.168.0.21/control',
                  'camera_controller_timeout': 0.5,
+                 'camera_frame_rate': 500,
+                 'camera_degrees': 45,
+                 'camera_qty': 1,
+                 'camera_recMode': 'segmented',
                  'camera_storage': 'sda1',
                  'camera_format': 'x264',
                  'sensor_debounce_time': 0.1}

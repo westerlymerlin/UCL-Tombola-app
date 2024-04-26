@@ -15,7 +15,7 @@ if __name__ == "__main__":
     # code to execute when the script is run directly
     Camera = CameraClass()  # create a camera object
     # make the camera record 1 in 10 revolutions
-    Camera.change_setting('recording_cadence', 35)
+    Camera.change_setting('recording_cadence', 10)
 
     # this key is required by the raspberry pi to accept remote commands
     Camera.change_setting('drum_apikey', 'f49E4EVBGztJqeHb5VdkYZE9GZQwj3')

@@ -51,11 +51,15 @@ class CameraClass:
         self.headers = {"Accept": "application/json",
                         "Content-Type": "application/json",
                         "api-key": settings['drum_apikey']}
-        self.camera_url = settings['camera_controller']
+        self.camera_url1 = settings['camera_controller1']
+        self.camera_url2 = settings['camera_controller2']
         self.camera_timeout = settings['camera_controller_timeout']
         self.drum_url = settings['drum_controller']
         self.drum_timeout = settings['drum_controller_timeout']
         self.recording_cadence = settings['recording_cadence']
+        self.filename = None
+        self.switchime = None
+        self.camera = 0
         self.recording_counter = 0
         if CONTROLLER is not None:  # The USB device is plugges in and working
             self.board_id = CONTROLLER
@@ -68,13 +72,48 @@ class CameraClass:
             logger.error('CameraClass: GPIO adapter missing')
             print('CameraClass: GPIO adapter missing')
 
+
+    def setup_cameras(self):
+        """Calculate number of frames to record and send details to camera"""
+        rpm = self.get_drum_rpm()
+        if rpm > 1:
+            frames = int(round(settings['camera_frame_rate']*(((60/rpm)/360)*settings['camera_degrees']), 0))
+        else:
+            frames = settings['camera_frame_rate'] * 10
+        frame_period = int(round((1/settings['camera_frame_rate']) * 1000000000, 0))
+        data_message = {'recMode': settings['camera_recMode'], 'recMaxFrames': frames, 'framePeriod': frame_period }
+        print(data_message)
+        url = self.camera_url1 + '/control/p'
+        try:
+            response = requests.post(url, timeout=self.camera_timeout, data=data_message, headers=self.headers)
+            if response.status_code == 200:
+                self.recording = True
+                logger.debug('CameraClass: Setup for camera 1 completed')
+            else:
+                logger.warning('CameraClass: Failed to Setup camera 1 - check camera status')
+        except requests.Timeout:
+            logger.error('CameraClass: Timeout when setting up camera 1')
+        if settings['camera_qty'] == 2:
+            try:
+                url = self.camera_url2 + '/control/p'
+                response = requests.post(url, timeout=self.camera_timeout, data=data_message, headers=self.headers)
+                if response.status_code == 200:
+                    self.recording = True
+                    logger.debug('CameraClass: Setup for camera 2 completed')
+                else:
+                    logger.warning('CameraClass: Failed to Setup camera 2 - check camera status')
+            except requests.Timeout:
+                logger.error('CameraClass: Failed to Setup camera 2 - check camera status')
+
     def start_camera(self):
         """Starts the camera sensor/record process."""
         if self.board_id is not None:
             self.runnning = True
-            thread = threading.Thread(target=self.__gpio_start_sensor_monitor)
+            self.setup_cameras()
+            self.filename = datetime.now().strftime('UCL-Tombola-%Y-%m-%d-%H-%M-%S')
+            thread = threading.Thread(target=self.__gpio_block1_sensor_monitor)
             thread.start()
-            thread = threading.Thread(target=self.__gpio_end_sensor_monitor)
+            thread = threading.Thread(target=self.__gpio_block2_sensor_monitor)
             thread.start()
             logger.info('CameraClass: Starting auto recording, looking for sensor signals')
         else:
@@ -85,62 +124,75 @@ class CameraClass:
         self.runnning = False
         logger.info('CameraClass: Stopping auto recording, ignoring sensor signals')
 
-    def __gpio_start_sensor_monitor(self):
+    def switch_camera(self):
+        """save the current set of images and then switch to the other camera"""
+        self.__file_save(self.camera, self.filename)
+        if self.camera == 1:
+            self.camera = 2
+        else:
+            self.camera = 1
+        self.filename = datetime.now().strftime('UCL-Tombola-%Y-%m-%d-%H-%M-%S')
+    def __gpio_block1_sensor_monitor(self):
         """GPIO Scanner thread scans the start sensor pin for a leading edge signal"""
         previous_sensor_state = False
         while self.runnning:
             current_sensor_state = self.start_sensor.value
             if previous_sensor_state != current_sensor_state and current_sensor_state is False:
-                thread = threading.Thread(target=self.__start_detect)
+                thread = threading.Thread(target=self.__block_1_detect)
                 thread.start()
                 sleep(settings['sensor_debounce_time'])
             previous_sensor_state = current_sensor_state
 
 
-    def __gpio_end_sensor_monitor(self):
+    def __gpio_block2_sensor_monitor(self):
         """GPIO Scanner thread scans the end sensor pin for a leading edge signal"""
         previous_sensor_state = False
         while self.runnning:
             current_sensor_state = self.end_sensor.value
             if previous_sensor_state != current_sensor_state and current_sensor_state is False:
-                thread = threading.Thread(target=self.__end_detect)
+                thread = threading.Thread(target=self.__block_2_detect)
                 thread.start()
                 sleep(settings['sensor_debounce_time'])
             previous_sensor_state = current_sensor_state
 
-    def __start_detect(self):
+    def __block_1_detect(self):
         """Actions to do if the start sensor is triggered"""
-        logger.debug('CameraClass: Start Sensor Triggered')
-        # print('CameraClass: Start Sensor Triggered')
-        if self.recording_counter == 0:
+        logger.debug('CameraClass: Block 1 Start Sensor Triggered')
+        # print('CameraClass: Block 1 Sensor Triggered')
+        if self.recording_counter < self.recording_cadence * 2:
             self.__start_recording()
         self.recording_counter += 1
-        if self.recording_counter == self.recording_cadence:
-            self.recording_counter = 0
+        if self.recording_counter == self.recording_cadence * 2:
+            self.switch_camera()
 
-    def __end_detect(self):
-        """Actions to do if the end sensor is triggered"""
-        logger.debug('CameraClass: End Sensor Triggered')
-        # print('CameraClass: End Sensor Triggered')
-        if self.recording:
-            self.__stop_recording()
-            self.__file_save()
+    def __block_2_detect(self):
+        """Actions to do if the start sensor is triggered"""
+        logger.debug('CameraClass: Block 2 Start Sensor Triggered')
+        # print('CameraClass: Block 2 Sensor Triggered')
+        if self.recording_counter < self.recording_cadence * 2:
+            self.__start_recording()
+        self.recording_counter += 1
+        if self.recording_counter == self.recording_cadence * 2:
+            self.switch_camera()
 
     def __start_recording(self):
         """Send a Start recording API call to the camera"""
         if self.recording:
             logger.warning('CameraClass: start_recording: Recording is already in progress')
             return
-        url = self.camera_url + '/startRecording'
+        if self.camera == 1:
+            url = self.camera_url1 + '/startRecording'
+        else:
+            url = self.camera_url2 + '/startRecording'
         try:
             response = requests.get(url, timeout=self.camera_timeout, headers=self.headers)
             if response.status_code == 200:
                 self.recording = True
-                logger.debug('CameraClass: Recording started')
+                logger.debug('CameraClass: Recording started camera %s', self.camera)
             else:
-                logger.warning('CameraClass: Failed to start recording - check camera status')
+                logger.warning('CameraClass: Failed to start recording - check camera %s status', self.camera)
         except requests.Timeout:
-            logger.error('CameraClass: Timeout when starting the camera')
+            logger.error('CameraClass: Timeout when starting the camera %s', self.camera)
 
     def __stop_recording(self):
         """ Send a stop recording API call to the Camera"""
@@ -158,13 +210,16 @@ class CameraClass:
         except requests.Timeout:
             logger.error('CameraClass: Timeout when stopping the camera')
 
-    def __file_save(self):
+    def __file_save(self, camera_id, filename):
         """Send a file save API call to the camera - format and file extentioon are in the settings.json file"""
         if self.recording:
             logger.warning('CameraClass: file_save: Recording is in progress so cannot save the file')
             return
-        url = self.camera_url + '/startFilesave'
-        payload = {'filename': datetime.now().strftime('UCL-Tombola-%Y-%m-%d-%H-%M-%S-%f'),
+        if camera_id == 1:
+            url = self.camera_url1 + '/startRecording'
+        else:
+            url = self.camera_url2 + '/startRecording'
+        payload = {'filename': filename,
                    'device': settings['camera_storage'],
                    'format': settings['camera_format']}
         try:
@@ -212,3 +267,7 @@ class CameraClass:
         """Update the setting in the settings json file"""
         settings[setting] = value
         writesettings()
+
+if __name__ == "__main__":
+    camera = CameraClass()
+    camera.show_settings()
