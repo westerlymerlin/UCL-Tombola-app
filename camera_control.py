@@ -35,8 +35,8 @@ class CameraClass:
     It also checks if the CONTROLLER is None and logs an error message if it is.
 
     Methods:
-        start_camera: Starts the camera sensor/record process.
-        stop_camera: Stops the camera sensor/record process.
+        start_camera_recording: Starts the camera sensor/record process.
+        stop_camera_recording: Stops the camera sensor/record process.
         set_drum_rpm: Sets the desired RPM of the drum.
         get_drum_rpm: Gets the RPM of the drum.
         change_setting: Changes the settings stored in the settings.json file
@@ -59,7 +59,7 @@ class CameraClass:
         self.recording_cadence = settings['recording_cadence']
         self.filename = None
         self.switchime = None
-        self.camera = 0
+        self.camera_no = 1
         self.recording_counter = 0
         if CONTROLLER is not None:  # The USB device is plugges in and working
             self.board_id = CONTROLLER
@@ -72,7 +72,6 @@ class CameraClass:
             logger.error('CameraClass: GPIO adapter missing')
             print('CameraClass: GPIO adapter missing')
 
-
     def setup_cameras(self):
         """Calculate number of frames to record and send details to camera"""
         rpm = self.get_drum_rpm()
@@ -81,11 +80,12 @@ class CameraClass:
         else:
             frames = settings['camera_frame_rate'] * 10
         frame_period = int(round((1/settings['camera_frame_rate']) * 1000000000, 0))
-        data_message = {'recMode': settings['camera_recMode'], 'recMaxFrames': frames, 'framePeriod': frame_period }
-        print(data_message)
-        url = self.camera_url1 + '/control/p'
+        data_message = {'recMode': settings['camera_recMode'], 'recMaxFrames': frames, 'framePeriod': frame_period}
+        print('for rpm = %s setting to %s frames' % (rpm, frames))
+        url = self.camera_url1 + '/p'
         try:
-            response = requests.post(url, timeout=self.camera_timeout, data=data_message, headers=self.headers)
+            response = requests.post(url, timeout=self.camera_timeout, json=data_message, headers=self.headers)
+            # print(response)
             if response.status_code == 200:
                 self.recording = True
                 logger.debug('CameraClass: Setup for camera 1 completed')
@@ -95,22 +95,22 @@ class CameraClass:
             logger.error('CameraClass: Timeout when setting up camera 1')
         if settings['camera_qty'] == 2:
             try:
-                url = self.camera_url2 + '/control/p'
-                response = requests.post(url, timeout=self.camera_timeout, data=data_message, headers=self.headers)
+                url = self.camera_url2 + '/p'
+                response = requests.post(url, timeout=self.camera_timeout, json=data_message, headers=self.headers)
                 if response.status_code == 200:
-                    self.recording = True
                     logger.debug('CameraClass: Setup for camera 2 completed')
                 else:
                     logger.warning('CameraClass: Failed to Setup camera 2 - check camera status')
             except requests.Timeout:
                 logger.error('CameraClass: Failed to Setup camera 2 - check camera status')
 
-    def start_camera(self):
+    def start_camera_recording(self):
         """Starts the camera sensor/record process."""
         if self.board_id is not None:
             self.running = True
             self.setup_cameras()
             self.filename = datetime.now().strftime('UCL-Tombola-%Y-%m-%d-%H-%M-%S')
+            print('Starting camera recording')
             thread = threading.Thread(target=self.__gpio_block1_sensor_monitor)
             thread.start()
             thread = threading.Thread(target=self.__gpio_block2_sensor_monitor)
@@ -119,18 +119,21 @@ class CameraClass:
         else:
             logger.error('CameraClass: Start with no GPIO Board Installed')
 
-    def stop_camera(self):
+    def stop_camera_recording(self):
         """Stops the camera sensor/record process."""
         self.running = False
+        print('Stopping camera recording')
         logger.info('CameraClass: Stopping auto recording, ignoring sensor signals')
 
     def switch_camera(self):
         """save the current set of images and then switch to the other camera"""
-        self.__file_save(self.camera, self.filename)
-        if self.camera == 1:
-            self.camera = 2
+        if self.camera_no <= settings['camera_qty']:
+            self.__file_save(self.camera_no, self.filename)
+        if self.camera_no == 1:
+            self.camera_no = 2
         else:
-            self.camera = 1
+            self.camera_no = 1
+        print('CameraClass: Switched to camera %s' % self.camera_no)
         self.filename = datetime.now().strftime('UCL-Tombola-%Y-%m-%d-%H-%M-%S')
 
     def __gpio_block1_sensor_monitor(self):
@@ -139,12 +142,10 @@ class CameraClass:
         while self.running:
             current_sensor_state = self.block1_sensor.value
             if previous_sensor_state != current_sensor_state and current_sensor_state is False:
-                print('Sensor 1')
                 thread = threading.Thread(target=self.__block_1_detect)
                 thread.start()
                 sleep(settings['sensor_debounce_time'])
             previous_sensor_state = current_sensor_state
-
 
     def __gpio_block2_sensor_monitor(self):
         """GPIO Scanner thread scans the end sensor pin for a leading edge signal"""
@@ -152,7 +153,6 @@ class CameraClass:
         while self.running:
             current_sensor_state = self.block2_sensor.value
             if previous_sensor_state != current_sensor_state and current_sensor_state is False:
-                print('Sensor 2')
                 thread = threading.Thread(target=self.__block_2_detect)
                 thread.start()
                 sleep(settings['sensor_debounce_time'])
@@ -180,47 +180,31 @@ class CameraClass:
 
     def __start_recording(self):
         """Send a Start recording API call to the camera"""
-        if self.camera == 1:
+        if self.camera_no == 1:
             url = self.camera_url1 + '/startRecording'
-            print("camera 1 %s" % self.recording_counter)
         else:
             url = self.camera_url2 + '/startRecording'
-            print("camera 2 %s" % self.recording_counter)
-        try:
-            response = requests.get(url, timeout=self.camera_timeout, headers=self.headers)
-            if response.status_code == 200:
-                self.recording = True
-                logger.debug('CameraClass: Recording started camera %s', self.camera)
-            else:
-                logger.warning('CameraClass: Failed to start recording - check camera %s status', self.camera)
-        except requests.Timeout:
-            logger.error('CameraClass: Timeout when starting the camera %s', self.camera)
-
-    def __stop_recording(self):
-        """ Send a stop recording API call to the Camera"""
-        if not self.recording:
-            logger.warning('CameraClass: stop_recording: Recording is already stopped')
+        if self.camera_no > settings['camera_qty']:
+            print('Only 1 camera installed')
             return
-        url = self.camera_url + '/stopRecording'
         try:
             response = requests.get(url, timeout=self.camera_timeout, headers=self.headers)
             if response.status_code == 200:
-                self.recording = False
-                logger.debug('CameraClass: Recording stopped')
+                print('CameraClass: Camera %s Clip %s' % (self.camera_no, self.recording_counter))
+                logger.debug('CameraClass: Recording started camera %s', self.camera_no)
             else:
-                logger.warning('CameraClass: Failed to stop recording - check camera status')
+                print('CameraClass: Failed to start recording - check camera %s status' % self.camera_no)
+                logger.warning('CameraClass: Failed to start recording - check camera %s status', self.camera_no)
         except requests.Timeout:
-            logger.error('CameraClass: Timeout when stopping the camera')
+            print('CameraClass: Timeout when starting the camera %s' % self.camera_no)
+            logger.error('CameraClass: Timeout when starting the camera %s', self.camera_no)
 
     def __file_save(self, camera_id, filename):
         """Send a file save API call to the camera - format and file extentioon are in the settings.json file"""
-        if self.recording:
-            logger.warning('CameraClass: file_save: Recording is in progress so cannot save the file')
-            return
         if camera_id == 1:
-            url = self.camera_url1 + '/startRecording'
+            url = self.camera_url1 + '/startFilesave'
         else:
-            url = self.camera_url2 + '/startRecording'
+            url = self.camera_url2 + '/startFilesave'
         payload = {'filename': filename,
                    'device': settings['camera_storage'],
                    'format': settings['camera_format']}
@@ -228,7 +212,7 @@ class CameraClass:
             response = requests.post(url, json=payload, timeout=self.camera_timeout, headers=self.headers)
             if response.status_code == 200:
                 self.recording = True
-                print('CameraClass: File saved')
+                print('CameraClass: File saved camera = %s' % self.camera_no)
                 logger.debug('CameraClass: File saved')
             else:
                 logger.warning('CameraClass: Failed to save file - check camera status %s', response.status_code)
@@ -241,9 +225,11 @@ class CameraClass:
         payload = {"setrpm": speed}
         try:
             requests.post(self.drum_url, json=payload, timeout=self.drum_timeout, headers=self.headers)
+            print('CameraClass: Drum speed set to %s' % str(speed))
             return speed
         except requests.Timeout:
-            logger.error("CameraClass: set_drum_speed request timed out")
+            print('CameraClass: set_drum_speed request timed out, check the raspberry pi')
+            logger.error("CameraClass: set_drum_speed request timed out, check the raspberry pi")
             return 0.0
 
     def get_drum_rpm(self):
@@ -288,8 +274,8 @@ class CameraClass:
 
 
 if __name__ == "__main__":
+    # Only used for testing sensors
     camera = CameraClass()
     camera.show_settings()
     camera.running = True
     camera.sensor_test()
-

@@ -51,9 +51,9 @@ if __name__ == "__main__":
     print('drum is at %s rpm' % Camera.get_drum_rpm())
 
     print('Starting the camera sensor')
-    Camera.start_camera()
+    Camera.start_camera_recording()
     sleep(120)
     print('Stopping the camera sensor')
-    Camera.stop_camera()
+    Camera.stop_camera_recording()
     print('stopping the drum')
     Camera.set_drum_rpm(0)
