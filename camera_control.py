@@ -44,9 +44,9 @@ class CameraClass:
     """
     def __init__(self):
         self.board_id = None
-        self.start_sensor = None
-        self.end_sensor = None
-        self.runnning = False
+        self.block1_sensor = None
+        self.block2_sensor = None
+        self.running = False
         self.recording = False
         self.headers = {"Accept": "application/json",
                         "Content-Type": "application/json",
@@ -63,10 +63,10 @@ class CameraClass:
         self.recording_counter = 0
         if CONTROLLER is not None:  # The USB device is plugges in and working
             self.board_id = CONTROLLER
-            self.start_sensor = digitalio.DigitalInOut(board.C0)
-            self.start_sensor.direction = digitalio.Direction.INPUT
-            self.end_sensor = digitalio.DigitalInOut(board.C1)
-            self.end_sensor.direction = digitalio.Direction.INPUT
+            self.block1_sensor = digitalio.DigitalInOut(board.C0)
+            self.block1_sensor.direction = digitalio.Direction.INPUT
+            self.block2_sensor = digitalio.DigitalInOut(board.C1)
+            self.block2_sensor.direction = digitalio.Direction.INPUT
             logger.info('CameraClass: Detected GPIO adapter: %s', CONTROLLER)
         else:
             logger.error('CameraClass: GPIO adapter missing')
@@ -108,7 +108,7 @@ class CameraClass:
     def start_camera(self):
         """Starts the camera sensor/record process."""
         if self.board_id is not None:
-            self.runnning = True
+            self.running = True
             self.setup_cameras()
             self.filename = datetime.now().strftime('UCL-Tombola-%Y-%m-%d-%H-%M-%S')
             thread = threading.Thread(target=self.__gpio_block1_sensor_monitor)
@@ -121,7 +121,7 @@ class CameraClass:
 
     def stop_camera(self):
         """Stops the camera sensor/record process."""
-        self.runnning = False
+        self.running = False
         logger.info('CameraClass: Stopping auto recording, ignoring sensor signals')
 
     def switch_camera(self):
@@ -132,12 +132,14 @@ class CameraClass:
         else:
             self.camera = 1
         self.filename = datetime.now().strftime('UCL-Tombola-%Y-%m-%d-%H-%M-%S')
+
     def __gpio_block1_sensor_monitor(self):
         """GPIO Scanner thread scans the start sensor pin for a leading edge signal"""
         previous_sensor_state = False
-        while self.runnning:
-            current_sensor_state = self.start_sensor.value
+        while self.running:
+            current_sensor_state = self.block1_sensor.value
             if previous_sensor_state != current_sensor_state and current_sensor_state is False:
+                print('Sensor 1')
                 thread = threading.Thread(target=self.__block_1_detect)
                 thread.start()
                 sleep(settings['sensor_debounce_time'])
@@ -147,9 +149,10 @@ class CameraClass:
     def __gpio_block2_sensor_monitor(self):
         """GPIO Scanner thread scans the end sensor pin for a leading edge signal"""
         previous_sensor_state = False
-        while self.runnning:
-            current_sensor_state = self.end_sensor.value
+        while self.running:
+            current_sensor_state = self.block2_sensor.value
             if previous_sensor_state != current_sensor_state and current_sensor_state is False:
+                print('Sensor 2')
                 thread = threading.Thread(target=self.__block_2_detect)
                 thread.start()
                 sleep(settings['sensor_debounce_time'])
@@ -177,13 +180,12 @@ class CameraClass:
 
     def __start_recording(self):
         """Send a Start recording API call to the camera"""
-        if self.recording:
-            logger.warning('CameraClass: start_recording: Recording is already in progress')
-            return
         if self.camera == 1:
             url = self.camera_url1 + '/startRecording'
+            print("camera 1 %s" % self.recording_counter)
         else:
             url = self.camera_url2 + '/startRecording'
+            print("camera 2 %s" % self.recording_counter)
         try:
             response = requests.get(url, timeout=self.camera_timeout, headers=self.headers)
             if response.status_code == 200:
@@ -268,6 +270,26 @@ class CameraClass:
         settings[setting] = value
         writesettings()
 
+    def sensor_test(self):
+        """Test routine"""
+        block1_sensor_state = True
+        block2_sensor_state = True
+        while self.running:
+            current1_sensor_state = self.block1_sensor.value
+            current2_sensor_state = self.block2_sensor.value
+            if block1_sensor_state != current1_sensor_state and current1_sensor_state is False:
+                print('Sensor 1 %s' % datetime.now())
+                sleep(settings['sensor_debounce_time'])
+            block1_sensor_state = current1_sensor_state
+            if block2_sensor_state != current2_sensor_state and current2_sensor_state is False:
+                print('Sensor 2 %s' % datetime.now())
+                sleep(settings['sensor_debounce_time'])
+            block2_sensor_state = current2_sensor_state
+
+
 if __name__ == "__main__":
     camera = CameraClass()
     camera.show_settings()
+    camera.running = True
+    camera.sensor_test()
+
