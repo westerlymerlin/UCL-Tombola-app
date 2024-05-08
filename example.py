@@ -20,6 +20,9 @@ if __name__ == "__main__":
     # this key is required by the raspberry pi to accept remote commands
     Camera.change_setting('drum_apikey', 'f49E4EVBGztJqeHb5VdkYZE9GZQwj3')
 
+    # display all the application settings in the pyton console
+    Camera.print_settings_to_console()
+
     print('Starting UCL-Tombola sequence')
     sleep(2)
     print('starting the drum at 95 rpm for 1 minute')

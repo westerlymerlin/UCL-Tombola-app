@@ -40,7 +40,7 @@ class CameraClass:
         set_drum_rpm: Sets the desired RPM of the drum.
         get_drum_rpm: Gets the RPM of the drum.
         change_setting: Changes the settings stored in the settings.json file
-        show_settings: Prints the settings stored in the settings.json file
+        print_settings_to_console: Prints the settings stored in the settings.json file
     """
     def __init__(self):
         self.board_id = None
@@ -244,7 +244,7 @@ class CameraClass:
             logger.error("CameraClass: set_drum_speed request timed out")
             return 0.0
 
-    def show_settings(self):
+    def print_settings_to_console(self):
         """Shows the current set of settings in the Json file"""
         print('\nUCL Tombola App Settings:')
         print('%s%s' % ("{:<40}".format('Setting'), 'Value'))
@@ -277,6 +277,6 @@ class CameraClass:
 if __name__ == "__main__":
     # Only used for testing sensors
     camera = CameraClass()
-    camera.show_settings()
+    camera.print_settings_to_console()
     camera.running = True
     camera.sensor_test()
