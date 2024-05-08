@@ -80,7 +80,8 @@ class CameraClass:
         else:
             frames = settings['camera_frame_rate'] * 10
         frame_period = int(round((1/settings['camera_frame_rate']) * 1000000000, 0))
-        data_message = {'recMode': settings['camera_recMode'], 'recMaxFrames': frames, 'framePeriod': frame_period}
+        data_message = {'recMode': settings['camera_recMode'], 'recMaxFrames': frames, 'framePeriod': frame_period,
+                        'recSegments': settings['recording_cadence'] * 2}
         print('for rpm = %s setting to %s frames' % (rpm, frames))
         url = self.camera_url1 + '/p'
         try:
@@ -180,17 +181,17 @@ class CameraClass:
 
     def __start_recording(self):
         """Send a Start recording API call to the camera"""
+        if self.camera_no > settings['camera_qty']:
+            print('Only 1 camera installed skipping these passes')
+            return
         if self.camera_no == 1:
             url = self.camera_url1 + '/startRecording'
         else:
             url = self.camera_url2 + '/startRecording'
-        if self.camera_no > settings['camera_qty']:
-            print('Only 1 camera installed')
-            return
         try:
             response = requests.get(url, timeout=self.camera_timeout, headers=self.headers)
             if response.status_code == 200:
-                print('CameraClass: Camera %s Clip %s' % (self.camera_no, self.recording_counter))
+                print('CameraClass: Camera %s Clip No %s' % (self.camera_no, self.recording_counter))
                 logger.debug('CameraClass: Recording started camera %s', self.camera_no)
             else:
                 print('CameraClass: Failed to start recording - check camera %s status' % self.camera_no)
