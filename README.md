@@ -30,7 +30,7 @@ The camera class has 4 public methods:<br>
 - `set_drum_rpm`: Sets the desired RPM of the drum.<br>
 - `get_drum_rpm`: Gets the RPM of the drum.
 - `change_setting`: Change a saved setting.
-- `print_settings_to_console`: Print out the settings.
+- `print_settings_to_console`: List out the settings.
 
 
 
