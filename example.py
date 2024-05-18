@@ -9,13 +9,13 @@ This is an example sequence and shows how to use the tombola-app
 """
 
 from time import sleep
-from camera_control import CameraClass
+from camera_timed import CameraClass
 
 if __name__ == "__main__":
     # code to execute when the script is run directly
     Camera = CameraClass()  # create a camera object
-    # make the camera record 15 revolutions before swictiung to the 2nd camera
-    Camera.change_setting('recording_cadence', 15)
+    # make the camera record 10 seconds before swictiung to the 2nd camera
+    Camera.change_setting('recording_cadence', 10)
 
     # this key is required by the raspberry pi to accept remote commands
     Camera.change_setting('drum_apikey', 'f49E4EVBGztJqeHb5VdkYZE9GZQwj3')
@@ -24,6 +24,10 @@ if __name__ == "__main__":
     Camera.print_settings_to_console()
 
     print('Starting UCL-Tombola sequence')
+
+    print('Starting the camera sensor')
+    Camera.start_camera_recording()
+
     sleep(2)
     print('starting the drum at 95 rpm for 1 minute')
     Camera.set_drum_rpm(95)
@@ -52,11 +56,9 @@ if __name__ == "__main__":
     Camera.set_drum_rpm(71.5)
     sleep(10)
     print('drum is at %s rpm' % Camera.get_drum_rpm())
-
-    print('Starting the camera sensor')
-    Camera.start_camera_recording()
     sleep(120)
-    print('Stopping the camera sensor')
-    Camera.stop_camera_recording()
     print('stopping the drum')
     Camera.set_drum_rpm(0)
+    sleep(10)
+    print('Stopping the camera sensor')
+    Camera.stop_camera_recording()
