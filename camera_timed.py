@@ -137,7 +137,7 @@ class CameraClass:
 
     def __stop_recording(self, camera_id):
         """Send a Stop recording API call to the camera"""
-        self.filename = datetime.now().strftime('UCL-Tombola-%Y-%m--%d-%H-%M-%S')
+        self.filename = datetime.now().strftime('UCL-Tombola-%Y-%m-%d--%H-%M-%S')
         if camera_id > settings['camera_qty']:
             print('Only 1 camera installed skipping stopping camera 2')
             return
