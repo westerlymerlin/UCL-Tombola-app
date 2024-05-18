@@ -246,11 +246,12 @@ class CameraClass:
 
     def print_settings_to_console(self):
         """Shows the current set of settings in the Json file"""
+        format_string = "{:<40}"
         print('\nUCL Tombola App Settings:')
-        print('%s%s' % ("{:<40}".format('Setting'), 'Value'))
-        print('%s%s' % ("{:<40}".format('-------'), '-----'))
+        print('%s%s' % (format_string.format('Setting'), 'Value'))
+        print('%s%s' % (format_string.format('-------'), '-----'))
         for item in settings:
-            print('%s%s' % ("{:<40}".format(item), settings[item]))
+            print('%s%s' % (format_string.format(item), settings[item]))
 
     def change_setting(self, setting, value):
         """Update the setting in the settings json file"""
