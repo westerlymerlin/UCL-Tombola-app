@@ -86,8 +86,9 @@ class CameraClass:
         """Stops the camera sensor/record process."""
         self.running = False
         self.__stop_recording(1)
+        self.__file_save(1, self.filename)
         self.__stop_recording(2)
-        print('Stopped camera recording')
+        print('Stopped all camera recording')
         logger.info('CameraClass: Stopping auto recording')
 
     def global_timer(self):
@@ -102,7 +103,7 @@ class CameraClass:
 
     def switch_camera(self):
         """save the current set of images and then switch to the other camera"""
-        print('Recording time is up - switching cameras')
+        print('Recording time is up - switching cameras now')
         self.recording_time = 0
         if self.camera_no == 1:
             self.camera_no = 2
@@ -114,7 +115,7 @@ class CameraClass:
             self.__start_recording(1)
             self.__stop_recording(2)
             self.__file_save(2, self.filename)
-        print('CameraClass: Switched to camera %s' % self.camera_no)
+        print('CameraClass: Switched completed to camera %s' % self.camera_no)
 
     def __start_recording(self, camera_id):
         """Send a Start recording API call to the camera"""
@@ -131,8 +132,8 @@ class CameraClass:
                 print('CameraClass: Camera %s starting recording' % camera_id)
                 logger.debug('CameraClass: Recording started camera %s', camera_id)
             else:
-                print('CameraClass: Failed to start recording - check camera %s status' % camera_id)
-                logger.warning('CameraClass: Failed to start recording - check camera %s status', camera_id)
+                print('CameraClass: Failed to start recording check camera. status =%s' % camera_id)
+                logger.warning('CameraClass: Failed to start recording check camera. status =%s', camera_id)
         except requests.Timeout:
             print('CameraClass: Timeout when starting the camera %s' % camera_id)
             logger.error('CameraClass: Timeout when starting the camera %s', camera_id)
@@ -176,8 +177,9 @@ class CameraClass:
                 print('CameraClass: File saved camera = %s filename = %s' % (camera_id, filename))
                 logger.debug('CameraClass: File saved')
             else:
-                print('CameraClass: Failed to save file - check camera status %s' % response.status_code)
-                logger.warning('CameraClass: Failed to save file - check camera status %s', response.status_code)
+                print('CameraClass: Failed to save file please check camera. status code = %s' % response.status_code)
+                logger.warning('CameraClass: Failed to save file please check camera. status code = %s',
+                               response.status_code)
         except requests.Timeout:
             logger.error('CameraClass: Timeout when saving a file to the camera, check it is on and connected')
 
