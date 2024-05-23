@@ -48,7 +48,8 @@ class CameraClass:
     def setup_cameras(self):
         """Calculate number of frames to record and send details to camera"""
         frame_period = int(round((1/settings['camera_frame_rate']) * 1000000000, 0))
-        data_message = {'recMode': settings['camera_recMode'], 'framePeriod': frame_period, 'recMaxFrames': 174700}
+        data_message = {'recMode': settings['camera_recMode'], 'framePeriod': frame_period,
+                        'recMaxFrames': settings['camera_maxframes']}
         url = self.camera_url1 + '/p'
         try:
             response = requests.post(url, timeout=self.camera_timeout, json=data_message, headers=self.headers)
@@ -74,7 +75,7 @@ class CameraClass:
         """Starts the camera sensor/record process."""
         print('Starting camera recording')
         logger.info('CameraClass: starting camera recording')
-        self.setup_cameras()
+        # self.setup_cameras()
         self.running = True
         self.camera_no = 1
         self.recording_time = 0
@@ -85,8 +86,9 @@ class CameraClass:
         """Stops the camera sensor/record process."""
         self.running = False
         self.__stop_recording(1)
+        self.__file_save(1, self.filename)
         self.__stop_recording(2)
-        print('Stopping camera recording')
+        print('Stopped all camera recording')
         logger.info('CameraClass: Stopping auto recording')
 
     def global_timer(self):
@@ -96,12 +98,13 @@ class CameraClass:
             timerthread.start()
             if self.recording_time == settings['recording_cadence']:
                 self.switch_camera()
-                self.recording_time = 0
             else:
                 self.recording_time += 1
 
     def switch_camera(self):
         """save the current set of images and then switch to the other camera"""
+        print('Recording time is up - switching cameras now')
+        self.recording_time = 0
         if self.camera_no == 1:
             self.camera_no = 2
             self.__start_recording(2)
@@ -112,7 +115,7 @@ class CameraClass:
             self.__start_recording(1)
             self.__stop_recording(2)
             self.__file_save(2, self.filename)
-        print('CameraClass: Switched to camera %s' % self.camera_no)
+        print('CameraClass: Switched completed to camera %s' % self.camera_no)
 
     def __start_recording(self, camera_id):
         """Send a Start recording API call to the camera"""
@@ -126,18 +129,18 @@ class CameraClass:
         try:
             response = requests.get(url, timeout=self.camera_timeout, headers=self.headers)
             if response.status_code == 200:
-                print('CameraClass: Camera %s recording' % camera_id)
+                print('CameraClass: Camera %s starting recording' % camera_id)
                 logger.debug('CameraClass: Recording started camera %s', camera_id)
             else:
-                print('CameraClass: Failed to start recording - check camera %s status' % camera_id)
-                logger.warning('CameraClass: Failed to start recording - check camera %s status', camera_id)
+                print('CameraClass: Failed to start recording check camera. status =%s' % camera_id)
+                logger.warning('CameraClass: Failed to start recording check camera. status =%s', camera_id)
         except requests.Timeout:
             print('CameraClass: Timeout when starting the camera %s' % camera_id)
             logger.error('CameraClass: Timeout when starting the camera %s', camera_id)
 
     def __stop_recording(self, camera_id):
         """Send a Stop recording API call to the camera"""
-        self.filename = datetime.now().strftime('UCL-Tombola-%Y-%m-%d--%H-%M-%S')
+        self.filename = datetime.now().strftime('UCL-Tombola_%Y-%m-%d_%H-%M-%S')
         if camera_id > settings['camera_qty']:
             print('Only 1 camera installed skipping stopping camera 2')
             return
@@ -158,9 +161,9 @@ class CameraClass:
             logger.error('CameraClass: Timeout when stopping the camera %s', camera_id)
 
     def __file_save(self, camera_id, filename):
-        """Send a file save API call to the camera - format and file extentioon are in the settings.json file"""
+        """Send a file save API call to the camera - format and file extension are in the settings.json file"""
         if camera_id > settings['camera_qty']:
-            print('Only 1 camera installed skipping stopping camera 2')
+            print('Only 1 camera installed skipping file saving to camera 2')
         if camera_id == 1:
             url = self.camera_url1 + '/startFilesave'
         else:
@@ -174,8 +177,9 @@ class CameraClass:
                 print('CameraClass: File saved camera = %s filename = %s' % (camera_id, filename))
                 logger.debug('CameraClass: File saved')
             else:
-                print('CameraClass: Failed to save file - check camera status %s' % response.status_code)
-                logger.warning('CameraClass: Failed to save file - check camera status %s', response.status_code)
+                print('CameraClass: Failed to save file please check camera. status code = %s' % response.status_code)
+                logger.warning('CameraClass: Failed to save file please check camera. status code = %s',
+                               response.status_code)
         except requests.Timeout:
             logger.error('CameraClass: Timeout when saving a file to the camera, check it is on and connected')
 
