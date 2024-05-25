@@ -107,15 +107,38 @@ class CameraClass:
         self.recording_time = 0
         if self.camera_no == 1:
             self.camera_no = 2
+            self.__flush_recording(2)
             self.__start_recording(2)
             self.__stop_recording(1)
             self.__file_save(1, self.filename)
         else:
             self.camera_no = 1
+            self.__flush_recording(1)
             self.__start_recording(1)
             self.__stop_recording(2)
             self.__file_save(2, self.filename)
         print('CameraClass: Switched completed to camera %s' % self.camera_no)
+
+    def __flush_recording(self, camera_id):
+        """Send a Start recording API call to the camera"""
+        if camera_id > settings['camera_qty']:
+            print('Only 1 camera installed skipping flush recording camera 2')
+            return
+        if camera_id == 1:
+            url = self.camera_url1 + '/flushRecording'
+        else:
+            url = self.camera_url2 + '/flushRecording'
+        try:
+            response = requests.get(url, timeout=self.camera_timeout, headers=self.headers)
+            if response.status_code == 200:
+                print('CameraClass: Camera %s flush recording' % camera_id)
+                logger.debug('CameraClass: flush recording %s', camera_id)
+            else:
+                print('CameraClass: Failed to flush recording check camera. status = %s' % camera_id)
+                logger.warning('CameraClass: Failed to flush recording check camera. status = %s', camera_id)
+        except requests.Timeout:
+            print('CameraClass: Timeout when flushing recording camera %s' % camera_id)
+            logger.error('CameraClass: Timeout when flushing recordingcamera %s', camera_id)
 
     def __start_recording(self, camera_id):
         """Send a Start recording API call to the camera"""
@@ -132,8 +155,8 @@ class CameraClass:
                 print('CameraClass: Camera %s starting recording' % camera_id)
                 logger.debug('CameraClass: Recording started camera %s', camera_id)
             else:
-                print('CameraClass: Failed to start recording check camera. status =%s' % camera_id)
-                logger.warning('CameraClass: Failed to start recording check camera. status =%s', camera_id)
+                print('CameraClass: Failed to start recording check camera. status = %s' % camera_id)
+                logger.warning('CameraClass: Failed to start recording check camera. status = %s', camera_id)
         except requests.Timeout:
             print('CameraClass: Timeout when starting the camera %s' % camera_id)
             logger.error('CameraClass: Timeout when starting the camera %s', camera_id)
