@@ -21,6 +21,7 @@ def writesettings():
 def initialise():
     """Setup the settings structure with default values"""
     isettings = {'LastSave': '01/01/2000 00:00:01',
+                 'app-name': 'UCL-Tombola-app',
                  'logappname': 'Tombola-Py',
                  'logfilepath': './logs/tombola-app.log',
                  'loglevel': 'INFO',
