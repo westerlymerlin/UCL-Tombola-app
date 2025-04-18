@@ -15,7 +15,12 @@ used to read positional info from the drum.<br>
 A chronos 2.1(HD) High speed camera [description here](https://www.krontech.ca/product/chronos-2-1-hd-high-speed-camera/)<br>
 - Camera API [description is here](https://www.krontech.ca/wp-content/uploads/2020/05/WebAPI_Printout.pdf)
 
-Full documentation can be found in the file: [README.pdf](./README.pdf)
+Application dcumentaton can be found in [readme.pdf](./README.pdf)
+
+Python module documentation can be found in the folder: [docs](./docs/readme.md)
+
+Change log can be found in the file [changelog.txt](./changelog.txt)
+
 
 ---
 **Sample Code**<br>
