@@ -1,41 +1,67 @@
-# UCL-tombola
+# UCL-tombola-app
 
-**An application to gather data from the UCL Riverbed simulator.**
-<br>
-The River simulator consistes of a large (1m diameter) drum that can contain water, cement blocks simulate rocks on the riverbed.
+## Overview
+A data collection application for the UCL Riverbed simulator. This tool facilitates capturing and processing data from a large-scale (1m diameter) drum simulator that models riverbed dynamics using water and cement blocks.
+## Hardware Components
+### Riverbed Simulator
+- 1m diameter drum containing water and cement blocks (simulating riverbed rocks)
+- Variable speed control for experimental conditions
 
-A high speed camera is used to capture images from the simulator
+### Data Acquisition Equipment
+- **High-Speed Camera**: [Chronos 2.1 HD](https://www.krontech.ca/product/chronos-2-1-hd-high-speed-camera/)
+    - Captures high-resolution footage of riverbed simulations
+    - [Camera API Documentation](https://www.krontech.ca/wp-content/uploads/2020/05/WebAPI_Printout.pdf)
 
-An [Adafruit FT232H Breakout - General Purpose USB to GPIO, SPI, I2C - USB C](https://www.adafruit.com/product/2264) is 
-used to read positional info from the drum.<br>
-- Linux setup instructions [are here](https://learn.adafruit.com/circuitpython-on-any-computer-with-ft232h/linux)<br> 
-- Windows setup instrauctions [are here](https://learn.adafruit.com/circuitpython-on-any-computer-with-ft232h/windows)<br>
-- Python details and libraries [are here](https://github.com/adafruit/Adafruit_Blinka)
+- **Position Tracking**: [Adafruit FT232H Breakout](https://www.adafruit.com/product/2264)
+    - USB to GPIO/SPI/I2C interface for precise drum position monitoring
+    - Setup Instructions:
+        - [Linux](https://learn.adafruit.com/circuitpython-on-any-computer-with-ft232h/linux)
+        - [Windows](https://learn.adafruit.com/circuitpython-on-any-computer-with-ft232h/windows)
 
-A chronos 2.1(HD) High speed camera [description here](https://www.krontech.ca/product/chronos-2-1-hd-high-speed-camera/)<br>
-- Camera API [description is here](https://www.krontech.ca/wp-content/uploads/2020/05/WebAPI_Printout.pdf)
+    - [Python Libraries](https://github.com/adafruit/Adafruit_Blinka)
 
-Application dcumentaton can be found in [readme.pdf](./README.pdf)
+## Documentation
+- [Application User Guide](./README.pdf) - Detailed usage instructions
+- [Module Documentation](./docs/readme.md) - Technical documentation for Python modules
+- [Change Log](./changelog.txt) - History of project updates
 
-Python module documentation can be found in the folder: [docs](./docs/readme.md)
+## Usage
+### Sample Code
+See `example.py` for a demonstration of controlling drum speed and recording image sequences.
+### Camera Interface
+The Camera class provides the following key methods:
 
-Change log can be found in the file [changelog.txt](./changelog.txt)
+| Method | Description |
+| --- | --- |
+| `start_camera_recording()` | Initiates the camera sensor/recording process |
+| `stop_camera_recording()` | Stops the camera sensor/recording process |
+| `set_drum_rpm(rpm)` | Sets the desired RPM of the drum |
+| `get_drum_rpm()` | Returns the current RPM of the drum |
+| `change_setting(setting, value)` | Modifies a saved configuration setting |
+| `print_settings_to_console()` | Displays current configuration settings |
+## Installation
+``` bash
+# Clone the repository
+git clone https://github.com/your-org/UCL-tombola.git
+cd UCL-tombola
+
+# Set up virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+## License
+[GNU GENERAL PUBLIC LICENSE](./LICENCE)
+## Contributors
+Dr Gary Twinn   
+Dr Byron Adams  
+Dr Jesse Zondervan  
+## Acknowledgments
+This project supports research at University College London (UCL).
 
 
----
-**Sample Code**<br>
-`example.py` example of a python script that controls the drum speed and records a series of images.
-
----
-**CameraClass**
-
-The camera class has 4 public methods:<br>
-- `start_camera_recording`: Starts the camera sensor/record process.<br>
-- `stop_camera_recording`: Stops the camera sensor/record process.<br>
-- `set_drum_rpm`: Sets the desired RPM of the drum.<br>
-- `get_drum_rpm`: Gets the RPM of the drum.
-- `change_setting`: Change a saved setting.
-- `print_settings_to_console`: List out the settings.
 
 
 
