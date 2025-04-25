@@ -27,11 +27,25 @@
 
 # camera\_timed
 
-Camera Timed - controls a A chronos 2.1(HD) High speed camera via the api, switches between 2 cameras based on the
-cadence setting for time. Controls the drum RPM vis the API on the UCL Tombola
-Controller
+Camera Timed Module
 
-Author: Gary Twinn
+A module for controlling Chronos 2.1(HD) high-speed cameras through their API. Features include:
+- Switching between two cameras based on configurable time cadence
+- Controlling drum RPM via the UCL Tombola Controller API
+- Recording management (start/stop/save recordings)
+- Camera setup and configuration
+- Settings management through a JSON configuration file
+
+The module implements a CameraClass to handle all camera operations including recording,
+file saving, and drum speed control. It's designed to work with either one or two cameras
+based on configuration settings.
+
+Dependencies:
+    - requests: For API communication
+    - threading: For timer-based camera switching
+    - datetime: For timestamped filenames
+    - app_control: For settings management
+    - logmanager: For logging operations
 
 <a id="camera_timed.threading"></a>
 
@@ -186,8 +200,20 @@ Send a file save API call to the camera - format and file extension are in the s
 def set_drum_rpm(speed: float)
 ```
 
-Set the desired rpm of the drum
-**speed** = float (0.0 - 74.9)
+Sets the drum RPM (revolutions per minute) by sending a POST request to
+a specified drum URL with the desired speed value.
+
+Attempts to send the specified speed information as a JSON payload to the
+tombola controller api endpoint. If the request succeeds, the speed value is
+returned. If the request times out, an error message is logged, and a
+default value is returned.
+
+Args:
+    speed (float): Desired drum speed in revolutions per minute (0.1 to 79.9).
+
+Returns:
+    float: The RPM value that was set if the request succeeds, or 0.0
+    if the request times out.
 
 <a id="camera_timed.CameraClass.get_drum_rpm"></a>
 
@@ -197,7 +223,20 @@ Set the desired rpm of the drum
 def get_drum_rpm()
 ```
 
-Get the rpm of the drum
+Fetches the drum's rotations per minute (RPM) from a remote service.
+
+This function sends a POST request to the tombola controller api endpoint with a payload requesting
+the RPM of the drum. If the request is successful, the RPM value is extracted and
+returned. In case of a timeout, it logs an error and returns a default value of 0.0.
+
+Raises:
+    KeyError: If the expected 'rpm' key is not present in the JSON response.
+
+Args:
+    None
+
+Returns:
+    float: The RPM of the drum, or 0.0 if the request times out.
 
 <a id="camera_timed.CameraClass.print_settings_to_console"></a>
 
