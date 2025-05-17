@@ -1,7 +1,7 @@
 # Module Documentation
 
 
-This document contains the documentation for all the modules in the **UCL-Tombola-app** version 2.0.2 application.
+This document contains the documentation for all the modules in this project.
 
 ---
 
