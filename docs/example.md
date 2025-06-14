@@ -1,8 +1,4 @@
-# Contents for: example
 
-* [example](#example)
-  * [sleep](#example.sleep)
-  * [CameraClass](#example.CameraClass)
 
 <a id="example"></a>
 
