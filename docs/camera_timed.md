@@ -1,27 +1,4 @@
-# Contents for: camera_timed
-
-* [camera\_timed](#camera_timed)
-  * [threading](#camera_timed.threading)
-  * [datetime](#camera_timed.datetime)
-  * [requests](#camera_timed.requests)
-  * [settings](#camera_timed.settings)
-  * [writesettings](#camera_timed.writesettings)
-  * [logger](#camera_timed.logger)
-  * [CameraClass](#camera_timed.CameraClass)
-    * [\_\_init\_\_](#camera_timed.CameraClass.__init__)
-    * [setup\_cameras](#camera_timed.CameraClass.setup_cameras)
-    * [start\_camera\_recording](#camera_timed.CameraClass.start_camera_recording)
-    * [stop\_camera\_recording](#camera_timed.CameraClass.stop_camera_recording)
-    * [global\_timer](#camera_timed.CameraClass.global_timer)
-    * [switch\_camera](#camera_timed.CameraClass.switch_camera)
-    * [\_\_flush\_recording](#camera_timed.CameraClass.__flush_recording)
-    * [\_\_start\_recording](#camera_timed.CameraClass.__start_recording)
-    * [\_\_stop\_recording](#camera_timed.CameraClass.__stop_recording)
-    * [\_\_file\_save](#camera_timed.CameraClass.__file_save)
-    * [set\_drum\_rpm](#camera_timed.CameraClass.set_drum_rpm)
-    * [get\_drum\_rpm](#camera_timed.CameraClass.get_drum_rpm)
-    * [print\_settings\_to\_console](#camera_timed.CameraClass.print_settings_to_console)
-    * [change\_setting](#camera_timed.CameraClass.change_setting)
+# None
 
 <a id="camera_timed"></a>
 
