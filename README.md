@@ -1,7 +1,7 @@
 # UCL-tombola-app
 
 ## Overview
-A data collection application for the UCL Riverbed simulator. This tool facilitates capturing and processing data from a large-scale (1m diameter) drum simulator that models riverbed dynamics using water and cement blocks.
+A data collection application for the Riverbed simulator. This tool facilitates capturing and processing data from a large-scale (1m diameter) drum simulator that models riverbed dynamics using water and cement blocks.
 ## Hardware Components
 ### Riverbed Simulator
 - 1m diameter drum containing water and cement blocks (simulating riverbed rocks)
@@ -60,6 +60,33 @@ Dr Byron Adams
 Dr Jesse Zondervan  
 ## Acknowledgments
 This project supports research at University College London (UCL).
+
+&nbsp;   
+&nbsp;    
+&nbsp;  
+&nbsp;   
+&nbsp;   
+&nbsp;   
+--------------
+
+#### Copyright (C) 2025 Gary Twinn
+
+This program is free software: you can redistribute it and/or modify  
+it under the terms of the GNU General Public License as published by  
+the Free Software Foundation, either version 3 of the License, or  
+(at your option) any later version.  
+
+This program is distributed in the hope that it will be useful,  
+but WITHOUT ANY WARRANTY; without even the implied warranty of  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the  
+GNU General Public License for more details.  
+
+You should have received a copy of the GNU General Public License  
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+
+Author  Gary Twinn  
+Repository  [github.com/westerlymerlin](https://github
 
 
 
