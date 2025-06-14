@@ -1,4 +1,4 @@
-# None
+
 
 <a id="logmanager"></a>
 
